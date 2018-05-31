@@ -11,10 +11,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
 public class Main {
@@ -89,14 +92,39 @@ public class Main {
 						CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 						try {
 							while (!stop) {
-								String recvData = in.readLine();
-								JSONObject recv = new JSONObject(recvData);
-								JSONObject answer = ai.processInputEvent(recv);
-								HttpPost request = new HttpPost(url);
-								StringEntity params = new StringEntity(answer.toString());
-								request.addHeader("content-type", "application/json");
-								request.setEntity(params);
-								httpClient.execute(request);
+								try {
+									String recvData = in.readLine();
+									JSONObject recv = null;
+									try {
+										recv = new JSONObject(recvData);
+									}
+									catch(Exception ex)	{
+										continue;
+									}
+									JSONObject answer = ai.processInputEvent(recv);
+									try {
+										if(answer != null) {
+											HttpPost request = new HttpPost(url);
+											StringEntity params = new StringEntity(answer.toString());
+											request.addHeader("content-type", "application/json");
+											request.setEntity(params);
+											CloseableHttpResponse response = httpClient.execute(request);
+											EntityUtils.consume(response.getEntity());
+										}
+									}
+									catch(ClientProtocolException e) {
+										System.out.println("ClientProtocolException[" + e.getMessage() + "]");
+										continue;
+									}
+									catch(IOException e) {
+										System.out.println("IO Exception while reading from Socket. Is socket to Symphony closed?");
+										continue;
+									}
+								}
+								catch (SocketTimeoutException ex)
+								{
+									//do nothing
+								}
 							}
 						}
 						catch(IOException e) {
@@ -112,13 +140,13 @@ public class Main {
 				stop();
 			} 
 			finally {
+				System.out.println("wth");
 			}
 		}
 
 		public void stop() {
 			stop = true;
 		}
-	}
 
 	private static void shutdownAndAwaitTermination(ExecutorService executorService) {
 		executorService.shutdown(); // Disable new tasks from being submitted
