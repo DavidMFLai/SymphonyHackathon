@@ -13,6 +13,9 @@ public class AI {
 		
 		JSONObject reply = null;
 		
+		
+		
+		
 		String issue_type = (String)jsonObject.getString("issue type");
 		if(issue_type.equals("ExecutionEvent")) {
 			reply = handleExecutionEvent(jsonObject);
@@ -28,6 +31,10 @@ public class AI {
 		}
 		else if(issue_type.equals("PassThroughNetworkDisconnection")) {
 			reply = handlePassThroughNetworkDisconnection(jsonObject);
+		}
+		else {
+			//default case == passthrough:
+			reply = handlePassthrough(jsonObject);
 		}
 
 		return reply;
@@ -45,6 +52,24 @@ public class AI {
 //		static String pnlKey				= new String("pnl");
 //		static String timestampKey			= new String("timestamp");
 //	}
+	private JSONObject handlePassthrough(JSONObject jsonObject) {
+		JSONObject reply = new JSONObject();
+		try {
+			reply.put("issue type", jsonObject.getString("issue type"));
+			reply.put("impacted systems", Arrays.asList(jsonObject.getString("impacted systems").split(",")));
+			reply.put("hostname",  jsonObject.getString("hostname"));
+			reply.put("impacted markets",  Arrays.asList(jsonObject.getString("impacted markets").split(",")));
+			reply.put("impacted flows",  Arrays.asList(jsonObject.getString("impacted flows").split(",")));
+			reply.put("impacted clients", Arrays.asList(jsonObject.getString("impacted clients").split(",")));
+			reply.put("pnl", Integer.parseInt(jsonObject.getString("pnl")));
+			reply.put("timestamp", new Date().toString());
+		}
+		catch (Exception ex) {
+			System.out.println("Unknown exception while processing a reply");
+		}
+		return reply;
+	}
+	
 	private JSONObject handleNetworkDown(JSONObject jsonObject) {
 		JSONObject reply = new JSONObject();
 		try {
