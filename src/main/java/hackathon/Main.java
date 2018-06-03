@@ -41,7 +41,9 @@ public class Main {
 		Scanner scanner = new Scanner(System.in);
 		while (true) {
 			try {
-				Thread.sleep(100);
+				while(!scanner.hasNextLine()) {
+					Thread.sleep(100);
+				}
 				String command = scanner.nextLine();
 				if (command.equals("quit")) {
 					task.stop();
@@ -94,7 +96,7 @@ public class Main {
 							while (!stop) {
 								try {
 									String recvData = in.readLine();
-									if(recvData.equals("")) {
+									if(recvData == null) {
 										break;
 									}
 									JSONObject recv = null;
@@ -145,8 +147,11 @@ public class Main {
 				System.out.println("IOException: " + e.getMessage() + ". Terminating AI Module");
 				stop();
 			} 
+			catch (Exception e) {
+				System.out.println("Exception: " + e.getMessage() + "");
+			}
 			finally {
-				System.out.println("wth");
+//				System.out.println("wth");
 			}
 		}
 
