@@ -3,7 +3,9 @@ package hackathon;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class AI {
@@ -11,20 +13,53 @@ public class AI {
 		
 		JSONObject reply = null;
 		
-		String type = (String)jsonObject.getString("Type");
-		if(type.equals("ExecutionEvent")) {
+		String issue_type = (String)jsonObject.getString("issue type");
+		if(issue_type.equals("ExecutionEvent")) {
 			reply = handleExecutionEvent(jsonObject);
 		}
-		else if(type.equals("FailoverEvent")) {
+		else if(issue_type.equals("FailoverEvent")) {
 			reply = handleFailoverEvent(jsonObject);
 		}
-		else if(type.equals("RhinosSelfTest")) {
+		else if(issue_type.equals("RhinosSelfTest")) {
 			reply = handleRhinosSelfTest(jsonObject);
 		}
-		else if(type.equals("PassThroughNetworkDisconnection")) {
+		else if(issue_type.equals("NetworkDown")) {
+			reply = handleNetworkDown(jsonObject);
+		}
+		else if(issue_type.equals("PassThroughNetworkDisconnection")) {
 			reply = handlePassThroughNetworkDisconnection(jsonObject);
 		}
 
+		return reply;
+	}
+//	static class JsonKeys
+//	{
+//		static String issueTypeKey 		 	= new String("issue type"); 
+//		static String impactedSystemsKey 	= new String("impacted systems");
+//		static String hostnameKey 		 	= new String("hostname");
+//		static String impactedMarketsKey 	= new String("impacted markets");
+//		static String impactedFlowsKey 		= new String("impacted flows");
+//		static String impactedClientsKey 	= new String("impacted clients");
+//		static String originKey 			= new String("origin");
+//		static String flowTypeKey 			= new String("flow type");
+//		static String pnlKey				= new String("pnl");
+//		static String timestampKey			= new String("timestamp");
+//	}
+	private JSONObject handleNetworkDown(JSONObject jsonObject) {
+		JSONObject reply = new JSONObject();
+		try {
+			reply.put("issue type", jsonObject.getString("issue type"));
+			reply.put("impacted systems", Arrays.asList(jsonObject.getString("impacted systems").split(",")));
+			reply.put("hostname",  jsonObject.getString("hostname"));
+			reply.put("impacted markets",  Arrays.asList(jsonObject.getString("impacted markets").split(",")));
+			reply.put("impacted flows",  Arrays.asList(jsonObject.getString("impacted flows").split(",")));
+			reply.put("impacted clients", Arrays.asList(jsonObject.getString("impacted clients").split(",")));
+			reply.put("pnl", Integer.parseInt(jsonObject.getString("pnl")));
+			reply.put("timestamp", new Date().toString());
+		}
+		catch (Exception ex) {
+			System.out.println("Unknown exception while processing a reply");
+		}
 		return reply;
 	}
 	
@@ -35,8 +70,9 @@ public class AI {
 		reply.put("hostname", "bnpserver001");
 		reply.put("impacted markets",  new ArrayList<>(Arrays.asList("HK", "JP")));
 		JSONObject impactedFlows = new JSONObject();
-		impactedFlows.put("origin", "institutional clients");
-		impactedFlows.put("flow type", "FnO");
+//		impactedFlows.put("origin", "institutional clients");
+//		impactedFlows.put("flow type", "FnO");
+//		reply.put("impacted flows",  impactedFlows);
 		reply.put("impacted flows",  impactedFlows);
 		reply.put("impacted clients", new ArrayList<>(Arrays.asList("jasmine", "aladdin")));
 		reply.put("pnl", 10000);
