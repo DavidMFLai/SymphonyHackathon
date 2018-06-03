@@ -147,7 +147,7 @@ public class Main {
 		public void stop() {
 			stop = true;
 		}
-
+	}
 	private static void shutdownAndAwaitTermination(ExecutorService executorService) {
 		executorService.shutdown(); // Disable new tasks from being submitted
 		try {
