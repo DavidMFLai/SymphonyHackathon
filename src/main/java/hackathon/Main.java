@@ -108,6 +108,9 @@ public class Main {
 											StringEntity params = new StringEntity(answer.toString());
 											request.addHeader("content-type", "application/json");
 											request.setEntity(params);
+											System.out.println();
+											System.out.println("Sending Message[" + request + "]");
+											System.out.println(">");
 											CloseableHttpResponse response = httpClient.execute(request);
 											EntityUtils.consume(response.getEntity());
 										}
