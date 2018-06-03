@@ -94,6 +94,9 @@ public class Main {
 							while (!stop) {
 								try {
 									String recvData = in.readLine();
+									if(recvData.equals("")) {
+										break;
+									}
 									JSONObject recv = null;
 									try {
 										recv = new JSONObject(recvData);
