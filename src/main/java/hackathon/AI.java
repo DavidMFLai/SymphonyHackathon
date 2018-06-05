@@ -1,7 +1,9 @@
 package hackathon;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import org.json.JSONObject;
 
@@ -9,7 +11,15 @@ public class AI {
 	private int consecutiveRejectCount = 0;
 	private int consecutiveCancelCount = 0;
 	private int consecutiveExecCount = 0;
+	int []timestampsOfRecentRejectMessages;
+	int currentIdxTimestampsOfRecentRejectMessages = 0;
+	private Configuration config;
 
+	public AI(Configuration config) {
+		this.config = config;
+		timestampsOfRecentRejectMessages = new int[this.config.getRejectionsPerSecondThreshold()];
+	}
+	
 	public JSONObject processInputEvent(JSONObject jsonObject) {
 		JSONObject reply;
 
@@ -76,7 +86,16 @@ public class AI {
 		consecutiveRejectCount++;
 		consecutiveCancelCount = 0;
 		consecutiveExecCount = 0;
-		if (consecutiveRejectCount >= 500) {
+		int timestamp = Integer.parseInt(jsonObject.getString("timestamp"));
+		
+		timestampsOfRecentRejectMessages[currentIdxTimestampsOfRecentRejectMessages] = timestamp;
+		currentIdxTimestampsOfRecentRejectMessages++;
+		if (currentIdxTimestampsOfRecentRejectMessages > this.config.getRejectionsPerSecondThreshold()) {
+			currentIdxTimestampsOfRecentRejectMessages = 0;
+		}
+		
+		if (timestamp - timestampsOfRecentRejectMessages[currentIdxTimestampsOfRecentRejectMessages] < 1000*1000) //if difference is less than 1 second
+		{
 			try {
 				JSONObject reply = new JSONObject();
 				reply.put("issue type", "RepeatedRejects");
@@ -93,7 +112,8 @@ public class AI {
 				System.out.println("Unknown exception while processing a reply in handleReject()");
 				return null;
 			}
-		} else {
+		}
+		else {
 			return null;
 		}
 	}

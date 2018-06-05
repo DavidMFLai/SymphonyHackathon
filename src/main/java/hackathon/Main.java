@@ -19,22 +19,55 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+import java.io.File;
 
 public class Main {
 
+	
+	
 	public static void main(String[] args) {
-
 		// process inputs
 		final int portNumber = Integer.parseInt(args[0]);
 		final String url = args[1];
-
+		
+		//read configuration
+		Configuration conf = null; 
+		try {
+			File fXmlFile = new File("rules.xml");
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(fXmlFile);
+			doc.getDocumentElement().normalize();
+			String latencyThreshold = doc.getElementsByTagName("LatencyThreshold").item(0).getTextContent();
+			String rejectionsPerSecondThreshold = doc.getElementsByTagName("RejectionsPerSecondThreshold").item(0).getTextContent();
+			conf = new Configuration(Integer.parseInt(latencyThreshold),
+					Integer.parseInt(rejectionsPerSecondThreshold));
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		// AI module
-		AI ai = new AI();
+		AI ai = new AI(conf);
 
 		ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 		ProcessJsonRunnable task = new ProcessJsonRunnable(ai, portNumber, url);
 		singleThreadExecutor.submit(task);
 
+		System.out.println("Reading xml configuration....");
+		
+		
+
+		
+		
 		System.out.println("AI module is up!");
 		System.out.println(">");
 
