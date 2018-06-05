@@ -49,8 +49,10 @@ public class Main {
 			doc.getDocumentElement().normalize();
 			String latencyThresholdInMilliseconds = doc.getElementsByTagName("LatencyThresholdInMilliseconds").item(0).getTextContent();
 			String rejectionsPerSecondThreshold = doc.getElementsByTagName("RejectionsPerSecondThreshold").item(0).getTextContent();
+			String cancelsPerSecondThreshold = doc.getElementsByTagName("CancelsPerSecondThreshold").item(0).getTextContent();
 			conf = new Configuration(Integer.parseInt(latencyThresholdInMilliseconds),
-					Integer.parseInt(rejectionsPerSecondThreshold));
+					Integer.parseInt(rejectionsPerSecondThreshold),
+					Integer.parseInt(cancelsPerSecondThreshold));
 			
 		} catch (Exception e) {
 			e.printStackTrace();

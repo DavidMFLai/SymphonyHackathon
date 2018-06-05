@@ -6,15 +6,17 @@ import java.util.Date;
 import org.json.JSONObject;
 
 public class AI {
-	private int consecutiveCancelCount = 0;
 	private int consecutiveExecCount = 0;
 	long []timestampsOfRecentRejectMessages;
 	int currentIdxTimestampsOfRecentRejectMessages = 0;
+	long []timestampsOfRecentCancelMessages;
+	int currentIdxTimestampsOfRecentCancelMessages = 0;
 	private Configuration config;
 
 	public AI(Configuration config) {
 		this.config = config;
 		timestampsOfRecentRejectMessages = new long[this.config.getRejectionsPerSecondThreshold()];
+		timestampsOfRecentCancelMessages = new long[this.config.getCancelsPerSecondThreshold()];
 	}
 	
 	public JSONObject processInputEvent(JSONObject jsonObject) {
@@ -26,8 +28,8 @@ public class AI {
 			reply = handleReject(jsonObject);
 		} else if (issue_type.equals("MarketDataSlowness")) {
 			reply = handleMarketDataSlowness(jsonObject);
-		} else if (issue_type.equals("RepeatedCancels")) {
-			reply = null;
+		} else if (issue_type.equals("Cancel")) {
+			reply = handleCancel(jsonObject);
 		} else if (issue_type.equals("Exec")) {
 			reply = null;
 		} else if (issue_type.equals("IncorrectPriceRange")) {
@@ -82,7 +84,6 @@ public class AI {
 	}
 
 	private JSONObject handleExec(JSONObject jsonObject) {
-		consecutiveCancelCount = 0;
 		consecutiveExecCount++;
 		if (consecutiveExecCount >= 500) {
 			try {
@@ -107,7 +108,6 @@ public class AI {
 	}
 
 	private JSONObject handleReject(JSONObject jsonObject) {
-		consecutiveCancelCount = 0;
 		consecutiveExecCount = 0;
 		long timestamp = jsonObject.getLong("timestamp");
 		
@@ -139,11 +139,17 @@ public class AI {
 			return null;
 		}
 	}
-
 	private JSONObject handleCancel(JSONObject jsonObject) {
-		consecutiveCancelCount++;
-		consecutiveExecCount = 0;
-		if (consecutiveCancelCount >= 500) {
+		long timestamp = jsonObject.getLong("timestamp");
+		
+		timestampsOfRecentCancelMessages[currentIdxTimestampsOfRecentCancelMessages] = timestamp;
+		currentIdxTimestampsOfRecentCancelMessages++;
+		if (currentIdxTimestampsOfRecentCancelMessages >= this.config.getCancelsPerSecondThreshold()) {
+			currentIdxTimestampsOfRecentCancelMessages = 0;
+		}
+		
+		if (timestamp - timestampsOfRecentCancelMessages[currentIdxTimestampsOfRecentCancelMessages] < 1000*1000) //if difference is less than 1 second
+		{
 			try {
 				JSONObject reply = new JSONObject();
 				reply.put("issue type", "RepeatedCancels");
@@ -154,15 +160,40 @@ public class AI {
 				reply.put("impacted clients", Arrays.asList(jsonObject.getString("impacted clients").split(",")));
 				reply.put("pnl", Integer.parseInt(jsonObject.getString("pnl")));
 				reply.put("timestamp", new Date().toString());
-				consecutiveCancelCount = 0;
 				return reply;
 			} catch (Exception ex) {
-				System.out.println("Unknown exception while processing a reply in handleReject()");
+				System.out.println("Unknown exception while processing a reply in handleCancel()");
 				return null;
 			}
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
+
+//	private JSONObject handleCancel(JSONObject jsonObject) {
+//		consecutiveCancelCount++;
+//		consecutiveExecCount = 0;
+//		if (consecutiveCancelCount >= 500) {
+//			try {
+//				JSONObject reply = new JSONObject();
+//				reply.put("issue type", "RepeatedCancels");
+//				reply.put("impacted systems", Arrays.asList(jsonObject.getString("impacted systems").split(",")));
+//				reply.put("hostname", jsonObject.getString("hostname"));
+//				reply.put("impacted markets", Arrays.asList(jsonObject.getString("impacted markets").split(",")));
+//				reply.put("impacted flows", Arrays.asList(jsonObject.getString("impacted flows").split(",")));
+//				reply.put("impacted clients", Arrays.asList(jsonObject.getString("impacted clients").split(",")));
+//				reply.put("pnl", Integer.parseInt(jsonObject.getString("pnl")));
+//				reply.put("timestamp", new Date().toString());
+//				consecutiveCancelCount = 0;
+//				return reply;
+//			} catch (Exception ex) {
+//				System.out.println("Unknown exception while processing a reply in handleReject()");
+//				return null;
+//			}
+//		} else {
+//			return null;
+//		}
+//	}
 
 }
