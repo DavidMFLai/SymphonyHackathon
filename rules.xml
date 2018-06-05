@@ -1,4 +1,4 @@
 <rules>
-<LatencyThresholdInMilliseconds>1000</LatencyThresholdInMilliseconds>
+<LatencyThresholdInMilliseconds>10</LatencyThresholdInMilliseconds>
 <RejectionsPerSecondThreshold>500</RejectionsPerSecondThreshold>
 </rules>
