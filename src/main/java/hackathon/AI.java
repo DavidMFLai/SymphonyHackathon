@@ -26,10 +26,14 @@ public class AI {
 			reply = handleReject(jsonObject);
 		} else if (issue_type.equals("MarketDataSlowness")) {
 			reply = handleMarketDataSlowness(jsonObject);
-		} else if (issue_type.equals("Cancel")) {
-			reply = handleCancel(jsonObject);
+		} else if (issue_type.equals("RepeatedCancels")) {
+			reply = null;
 		} else if (issue_type.equals("Exec")) {
-			reply = handleExec(jsonObject);
+			reply = null;
+		} else if (issue_type.equals("IncorrectPriceRange")) {
+			reply = null;
+		} else if (issue_type.equals("Failover")) {
+			reply = null;
 		} else {
 			// default case == passthrough:
 			reply = handlePassthrough(jsonObject);
