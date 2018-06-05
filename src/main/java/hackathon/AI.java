@@ -1,23 +1,20 @@
 package hackathon;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 import org.json.JSONObject;
 
 public class AI {
-	private int consecutiveRejectCount = 0;
 	private int consecutiveCancelCount = 0;
 	private int consecutiveExecCount = 0;
-	int []timestampsOfRecentRejectMessages;
+	long []timestampsOfRecentRejectMessages;
 	int currentIdxTimestampsOfRecentRejectMessages = 0;
 	private Configuration config;
 
 	public AI(Configuration config) {
 		this.config = config;
-		timestampsOfRecentRejectMessages = new int[this.config.getRejectionsPerSecondThreshold()];
+		timestampsOfRecentRejectMessages = new long[this.config.getRejectionsPerSecondThreshold()];
 	}
 	
 	public JSONObject processInputEvent(JSONObject jsonObject) {
@@ -57,7 +54,6 @@ public class AI {
 	}
 
 	private JSONObject handleExec(JSONObject jsonObject) {
-		consecutiveRejectCount = 0;
 		consecutiveCancelCount = 0;
 		consecutiveExecCount++;
 		if (consecutiveExecCount >= 500) {
@@ -83,14 +79,13 @@ public class AI {
 	}
 
 	private JSONObject handleReject(JSONObject jsonObject) {
-		consecutiveRejectCount++;
 		consecutiveCancelCount = 0;
 		consecutiveExecCount = 0;
-		int timestamp = Integer.parseInt(jsonObject.getString("timestamp"));
+		long timestamp = jsonObject.getLong("timestamp");
 		
 		timestampsOfRecentRejectMessages[currentIdxTimestampsOfRecentRejectMessages] = timestamp;
 		currentIdxTimestampsOfRecentRejectMessages++;
-		if (currentIdxTimestampsOfRecentRejectMessages > this.config.getRejectionsPerSecondThreshold()) {
+		if (currentIdxTimestampsOfRecentRejectMessages >= this.config.getRejectionsPerSecondThreshold()) {
 			currentIdxTimestampsOfRecentRejectMessages = 0;
 		}
 		
@@ -106,7 +101,6 @@ public class AI {
 				reply.put("impacted clients", Arrays.asList(jsonObject.getString("impacted clients").split(",")));
 				reply.put("pnl", Integer.parseInt(jsonObject.getString("pnl")));
 				reply.put("timestamp", new Date().toString());
-				consecutiveRejectCount = 0;
 				return reply;
 			} catch (Exception ex) {
 				System.out.println("Unknown exception while processing a reply in handleReject()");
@@ -119,7 +113,6 @@ public class AI {
 	}
 
 	private JSONObject handleCancel(JSONObject jsonObject) {
-		consecutiveRejectCount = 0;
 		consecutiveCancelCount++;
 		consecutiveExecCount = 0;
 		if (consecutiveCancelCount >= 500) {

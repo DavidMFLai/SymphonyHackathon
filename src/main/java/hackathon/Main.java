@@ -39,6 +39,7 @@ public class Main {
 		final String url = args[1];
 		
 		//read configuration
+		System.out.println("Reading xml configuration....");
 		Configuration conf = null; 
 		try {
 			File fXmlFile = new File("rules.xml");
@@ -61,12 +62,6 @@ public class Main {
 		ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 		ProcessJsonRunnable task = new ProcessJsonRunnable(ai, portNumber, url);
 		singleThreadExecutor.submit(task);
-
-		System.out.println("Reading xml configuration....");
-		
-		
-
-		
 		
 		System.out.println("AI module is up!");
 		System.out.println(">");
@@ -129,6 +124,7 @@ public class Main {
 							while (!stop) {
 								try {
 									String recvData = in.readLine();
+									System.out.println(recvData);
 									if(recvData == null) {
 										break;
 									}
