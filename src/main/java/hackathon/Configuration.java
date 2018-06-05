@@ -2,19 +2,19 @@ package hackathon;
 
 public class Configuration {
 	
-	public Configuration(int latencyThresholdMicroseconds, int rejectionsPerSecondThreshold) {
-		this.latencyThresholdMicroseconds = latencyThresholdMicroseconds;
+	public Configuration(int latencyThresholdMilliseconds, int rejectionsPerSecondThreshold) {
+		this.latencyThresholdMilliseconds = latencyThresholdMilliseconds;
 		this.rejectionsPerSecondThreshold = rejectionsPerSecondThreshold;
 	}
 	
-	public int getLatencyThresholdMicroseconds() {
-		return latencyThresholdMicroseconds;
+	public int getLatencyThresholdMilliseconds() {
+		return latencyThresholdMilliseconds;
 	}
 
 	public int getRejectionsPerSecondThreshold() {
 		return rejectionsPerSecondThreshold;
 	}
 
-	private final int latencyThresholdMicroseconds;
+	private final int latencyThresholdMilliseconds;
 	private final int rejectionsPerSecondThreshold;
 }

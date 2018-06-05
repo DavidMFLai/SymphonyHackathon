@@ -47,9 +47,9 @@ public class Main {
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(fXmlFile);
 			doc.getDocumentElement().normalize();
-			String latencyThreshold = doc.getElementsByTagName("LatencyThreshold").item(0).getTextContent();
+			String latencyThresholdInMilliseconds = doc.getElementsByTagName("LatencyThresholdInMilliseconds").item(0).getTextContent();
 			String rejectionsPerSecondThreshold = doc.getElementsByTagName("RejectionsPerSecondThreshold").item(0).getTextContent();
-			conf = new Configuration(Integer.parseInt(latencyThreshold),
+			conf = new Configuration(Integer.parseInt(latencyThresholdInMilliseconds),
 					Integer.parseInt(rejectionsPerSecondThreshold));
 			
 		} catch (Exception e) {
@@ -124,10 +124,10 @@ public class Main {
 							while (!stop) {
 								try {
 									String recvData = in.readLine();
-									System.out.println(recvData);
 									if(recvData == null) {
 										break;
 									}
+									System.out.println("Received Message[ " + recvData + "]");
 									JSONObject recv = null;
 									try {
 										recv = new JSONObject(recvData);

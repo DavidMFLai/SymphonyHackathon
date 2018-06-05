@@ -24,6 +24,8 @@ public class AI {
 		System.out.println("Received event[" + issue_type + "]");
 		if (issue_type.equals("Reject")) {
 			reply = handleReject(jsonObject);
+		} else if (issue_type.equals("MarketDataSlowness")) {
+			reply = handleMarketDataSlowness(jsonObject);
 		} else if (issue_type.equals("Cancel")) {
 			reply = handleCancel(jsonObject);
 		} else if (issue_type.equals("Exec")) {
@@ -36,6 +38,28 @@ public class AI {
 		return reply;
 	}
 
+	private JSONObject handleMarketDataSlowness(JSONObject jsonObject) {
+		
+		JSONObject reply = null;
+		try {
+			if(jsonObject.getLong("LatencyInMs") > this.config.getLatencyThresholdMilliseconds()) {
+				reply = new JSONObject();
+				reply.put("issue type", jsonObject.getString("issue type"));
+				reply.put("impacted systems", Arrays.asList(jsonObject.getString("impacted systems").split(",")));
+				reply.put("hostname", jsonObject.getString("hostname"));
+				reply.put("impacted markets", Arrays.asList(jsonObject.getString("impacted markets").split(",")));
+				reply.put("impacted flows", Arrays.asList(jsonObject.getString("impacted flows").split(",")));
+				reply.put("impacted clients", Arrays.asList(jsonObject.getString("impacted clients").split(",")));
+				reply.put("pnl", Integer.parseInt(jsonObject.getString("pnl")));
+				reply.put("timestamp", new Date().toString());
+			}
+
+		} catch (Exception ex) {
+			System.out.println("Unknown exception while processing a reply");
+		}
+		return reply;
+	}
+	
 	private JSONObject handlePassthrough(JSONObject jsonObject) {
 		JSONObject reply = new JSONObject();
 		try {
